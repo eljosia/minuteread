@@ -167,23 +167,53 @@ function loseLife() {
     }
 }
 
-async function generateAndShare() {
-    const canvas = await html2canvas(document.getElementById('capture-area'), { scale: 2 });
-    const dataUrl = canvas.toDataURL("image/png");
-    const blob = await (await fetch(dataUrl)).blob();
-    const file = new File([blob], 'mi-progreso.png', { type: 'image/png' });
+async function copyImageToClipboard(blob) {
+    if (!navigator.clipboard || !window.ClipboardItem) return false;
 
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({
-            files: [file],
-            title: 'Mi Progreso de Lectura',
-            text: `¡Mira mamá! Hoy llegué al nivel ${levels[currentLvlIndex].id} con ${totalWordsRead} palabras leídas. 📖✨`
+    await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': blob })
+    ]);
+
+    return true;
+}
+
+async function generateAndShare() {
+    try {
+        const element = document.getElementById('capture-area');
+
+        const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff'
         });
-    } else {
-        const link = document.createElement('a');
-        link.download = 'mi-logro.png';
-        link.href = dataUrl;
-        link.click();
+
+        const blob = await new Promise(resolve =>
+            canvas.toBlob(resolve, 'image/png')
+        );
+
+        const file = new File([blob], 'mi-progreso.png', { type: 'image/png' });
+
+        if (
+            navigator.share &&
+            navigator.canShare &&
+            navigator.canShare({ files: [file] })
+        ) {
+            await navigator.share({
+                files: [file],
+                title: 'Mi Progreso de Lectura',
+                text: `Mira mama hoy llegue al nivel ${levels[currentLvlIndex].id} con ${totalWordsRead} palabras leidas`
+            });
+        } else {
+            const copied = await copyImageToClipboard(blob);
+            if (copied) {
+                alert('Imagen copiada al portapapeles. ¡Pégala donde quieras compartirla!');
+            } else {
+                alert('No se pudo copiar la imagen al portapapeles');
+            }
+        }
+    } catch (err) {
+        console.error('Error al generar o compartir', err);
+        alert('No se pudo compartir la imagen');
     }
 }
 
