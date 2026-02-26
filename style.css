@@ -1,0 +1,90 @@
+:root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --text-gray: #95a5a6;
+            --success: #2ecc71;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            background-color: #f0f9ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 40px;
+            box-shadow: 0 20px 0 #cbd5e1;
+            max-width: 850px;
+            width: 90%;
+            text-align: center;
+            border: 8px solid var(--secondary);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: var(--accent);
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #d97706;
+            box-shadow: 0 5px 0 #fcd34d;
+        }
+
+        .text-area {
+            font-size: 2.5rem;
+            line-height: 1.8;
+            margin: 30px 0;
+            text-align: left;
+            padding: 30px;
+            background: #fffdf0;
+            border: 4px dashed #94a3b8;
+            border-radius: 30px;
+            min-height: 250px;
+        }
+
+        .word { 
+            display: inline-block; 
+            margin-right: 15px; 
+            color: var(--text-gray); 
+            transition: all 0.3s; 
+        }
+
+        .word.read { 
+            color: var(--success); 
+            transform: scale(1.1);
+            font-weight: bold;
+        }
+
+        .word.current { 
+            color: var(--primary); 
+            border-bottom: 6px dotted var(--primary);
+            animation: bounce 0.6s infinite alternate;
+        }
+
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+
+        .btn-play {
+            padding: 20px 60px;
+            font-size: 2rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 8px 0 #e11d48;
+        }
+
+        .hidden { display: none; }
