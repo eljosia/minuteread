@@ -1,90 +1,210 @@
 :root {
-            --primary: #FF6B6B;
-            --secondary: #4ECDC4;
-            --accent: #FFE66D;
-            --text-gray: #95a5a6;
-            --success: #2ecc71;
-        }
+    --primary: #FF6B6B;
+    --secondary: #4ECDC4;
+    --accent: #FFE66D;
+    --bg: #f0f9ff;
+}
 
-        body {
-            font-family: 'Comic Sans MS', sans-serif;
-            background-color: #f0f9ff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
+body {
+    font-family: 'Comic Sans MS', 'Arial', sans-serif;
+    background-color: var(--bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    /* Quitamos overflow: hidden para permitir scroll en móviles si el contenido crece */
+    overflow-x: hidden;
+    padding: 10px; /* Margen de seguridad para pantallas pequeñas */
+}
 
-        .card {
-            background: white;
-            padding: 40px;
-            border-radius: 40px;
-            box-shadow: 0 20px 0 #cbd5e1;
-            max-width: 850px;
-            width: 90%;
-            text-align: center;
-            border: 8px solid var(--secondary);
-        }
+.game-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 40px;
+    box-shadow: 0 10px 0 #cbd5e1;
+    max-width: 800px;
+    width: 100%; /* Ocupa el ancho disponible */
+    text-align: center;
+    border: 6px solid var(--secondary);
+    position: relative;
+    box-sizing: border-box;
+}
 
-        .header {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
-        }
+.hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 10px;
+}
 
-        .stat-box {
-            background: var(--accent);
-            padding: 10px 25px;
-            border-radius: 20px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #d97706;
-            box-shadow: 0 5px 0 #fcd34d;
-        }
+.level-badge {
+    background: var(--primary);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
 
-        .text-area {
-            font-size: 2.5rem;
-            line-height: 1.8;
-            margin: 30px 0;
-            text-align: left;
-            padding: 30px;
-            background: #fffdf0;
-            border: 4px dashed #94a3b8;
-            border-radius: 30px;
-            min-height: 250px;
-        }
+.lives-container {
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+}
 
-        .word { 
-            display: inline-block; 
-            margin-right: 15px; 
-            color: var(--text-gray); 
-            transition: all 0.3s; 
-        }
+.timer-bar {
+    width: 100%;
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
 
-        .word.read { 
-            color: var(--success); 
-            transform: scale(1.1);
-            font-weight: bold;
-        }
+#timer-progress {
+    width: 100%;
+    height: 100%;
+    background: var(--secondary);
+    transition: width 1s linear;
+}
 
-        .word.current { 
-            color: var(--primary); 
-            border-bottom: 6px dotted var(--primary);
-            animation: bounce 0.6s infinite alternate;
-        }
+.text-display {
+    font-size: clamp(1.8rem, 8vw, 2.8rem); /* Tipografía fluida: se ajusta al ancho de pantalla */
+    line-height: 1.4;
+    margin: 1.5rem 0;
+    min-height: 120px;
+    padding: 1.5rem;
+    background: #fffdf0;
+    border-radius: 20px;
+    border: 3px dashed #cbd5e1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+    word-break: break-word;
+}
 
-        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+.word {
+    color: #94a3b8;
+    margin: 0.2rem 0.5rem;
+    display: inline-block;
+    transition: 0.3s;
+}
 
-        .btn-play {
-            padding: 20px 60px;
-            font-size: 2rem;
-            cursor: pointer;
-            border: none;
-            border-radius: 50px;
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 8px 0 #e11d48;
-        }
+.word.current {
+    color: var(--primary);
+    border-bottom: 4px dotted var(--primary);
+    animation: bounce 0.5s infinite alternate;
+}
 
-        .hidden { display: none; }
+.word.read {
+    color: #2ecc71;
+    font-weight: bold;
+    transform: scale(1.05);
+}
+
+@keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-5px); }
+}
+
+.btn-start {
+    padding: 1rem 2.5rem;
+    font-size: 1.5rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #e11d48;
+    font-family: inherit;
+    width: auto;
+    max-width: 100%;
+}
+
+.btn-start:active {
+    transform: translateY(3px);
+    box-shadow: 0 3px 0 #e11d48;
+}
+
+/* Soporte para las imágenes de corazones */
+.heart-img {
+    transition: all 0.3s ease;
+    margin: 0 2px;
+    width: 28px; /* Tamaño responsivo base */
+    height: auto;
+}
+
+.heart-img.lost {
+    filter: grayscale(1) opacity(0.2);
+    transform: scale(0.8);
+}
+
+/* --- MEDIA QUERIES PARA MÓVILES --- */
+
+@media (max-width: 600px) {
+    .game-card {
+        padding: 1.2rem;
+        border-radius: 25px;
+        border-width: 4px;
+    }
+
+    .hud {
+        flex-direction: row; /* Mantenemos fila pero ajustamos tamaños */
+        justify-content: space-between;
+    }
+
+    .level-badge {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+
+    .heart-img {
+        width: 22px;
+    }
+
+    .text-display {
+        padding: 1rem;
+        min-height: 100px;
+        margin: 1rem 0;
+    }
+
+    .btn-start {
+        padding: 0.8rem 2rem;
+        font-size: 1.2rem;
+    }
+}
+
+/* Ajuste para pantallas muy pequeñas o modo landscape en móviles */
+@media (max-height: 500px) {
+    body {
+        align-items: flex-start;
+        padding: 20px 10px;
+    }
+    
+    .text-display {
+        min-height: auto;
+        font-size: 1.5rem;
+    }
+}
+
+/* Área de captura (mantenemos fija para el diploma) */
+#capture-area {
+    position: absolute;
+    left: -9999px;
+    width: 500px;
+    padding: 40px;
+    background: white;
+    border: 15px solid var(--secondary);
+    border-radius: 40px;
+    text-align: center;
+}
+
+#footer {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #94a3b8;
+}

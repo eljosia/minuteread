@@ -1,20 +1,27 @@
-const story = "Mi perro es muy lindo. El sol sale por la mañana. Me gusta comer galletas ricas. El gato juega con la pelota roja.";
-const wordsArray = story.split(" ");
+const levels = [
+    { id: 1, name: "Sílabas con PL", text: "planta plaza planeta El platillo tiene platano", time: 60 },
+    { id: 2, name: "Sílabas con PR", text: "pregunta aprender profesor El preso esta en prision", time: 60 },
+    { id: 3, name: "Sílabas con BL", text: "cable establo ombligo Pablo pinta su casa de blanco", time: 60 },
+    { id: 4, name: "Sílabas con TR", text: "tronco triangulo trono Trini trabaja como maestro", time: 60 },
+    { id: 5, name: "Lectura PR", text: "Priscila es una princesa y pasea con su principe por el prado", time: 60 },
+    { id: 6, name: "Lectura PL", text: "Pilar come platanos Placido esta nadando en la playa", time: 60 },
+    { id: 7, name: "Lectura BL", text: "Las casas del pueblo son blancas Pablo esta en la biblioteca", time: 60 },
+    { id: 8, name: "Lectura TR", text: "Patricia come truchas El sastre hace trajes de madera", time: 60 },
+    { id: 9, name: "Desafío Mixto", text: "El primo de Laura gano un premio con una pluma de plastico", time: 60 },
+    { id: 10, name: "Maestro de Lectura", text: "Cuando esta nublado y llueve las personas ocupan impermeables y paraguas", time: 60 }
+];
+
+let currentLvlIndex = 0;
+let lives = 3;
 let currentWordIndex = 0;
-let score = 0;
-let timeLeft = 60;
+let timer;
+let timeLeft;
 let recognition;
+let wordsArray = [];
+
+let totalWordsRead = 0;
+let startTimeGlobal;
 let gameActive = false;
-
-const textDisplay = document.getElementById('text-display');
-
-wordsArray.forEach((word, index) => {
-    const span = document.createElement('span');
-    span.innerText = word;
-    span.classList.add('word');
-    span.id = `word-${index}`;
-    textDisplay.appendChild(span);
-});
 
 if ('webkitSpeechRecognition' in window) {
     recognition = new webkitSpeechRecognition();
@@ -24,166 +31,220 @@ if ('webkitSpeechRecognition' in window) {
 
     recognition.onresult = (event) => {
         if (!gameActive) return;
-        const lastResult = event.results[event.results.length - 1][0].transcript.toLowerCase();
-        processSpeech(lastResult);
+        const speech = event.results[event.results.length - 1][0].transcript.toLowerCase();
+        // console.log("Speech:", speech);
+        checkSpeech(speech);
     };
+
+    recognition.onerror = (err) => console.error("Error Speech:", err.error);
 }
 
-function processSpeech(speech) {
-    if (currentWordIndex >= wordsArray.length) return;
-    const targetWord = wordsArray[currentWordIndex].toLowerCase().replace(/[.,]/g, "");
-    if (speech.includes(targetWord)) {
-        markWordAsRead(currentWordIndex);
-        currentWordIndex++;
-        score++;
-        document.getElementById('score').innerText = score;
-        processSpeech(speech);
-    }
-}
-
-function markWordAsRead(index) {
-    const el = document.getElementById(`word-${index}`);
-    el.classList.remove('current');
-    el.classList.add('read');
-    const next = document.getElementById(`word-${index + 1}`);
-    if (next) next.classList.add('current');
-}
-
-// Nueva función para verificar el permiso
-async function checkMicPermission() {
+async function initGame() {
     try {
-        // Intentamos obtener el estado del permiso
-        const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
-
-        if (permissionStatus.state === 'granted') {
-            return true;
-        } else if (permissionStatus.state === 'prompt') {
-            // Si está en 'prompt', intentamos pedirlo activando el micro un segundo
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                stream.getTracks().forEach(track => track.stop()); // Cerramos el micro de inmediato
-                return true;
-            } catch (err) {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    } catch (error) {
-        // Algunos navegadores no soportan .query para micro, usamos el método directo
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            stream.getTracks().forEach(track => track.stop());
-            return true;
-        } catch (err) {
-            return false;
-        }
-    }
-}
-
-// Modificación de la función de inicio
-async function startGame() {
-    const hasPermission = await checkMicPermission();
-
-    if (!hasPermission) {
-        Swal.fire({
-            title: '¡Necesitamos tu voz! 🎤',
-            text: 'Haz clic en "Permitir" arriba en tu navegador para que el juego pueda escucharte leer.',
-            icon: 'info',
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#4ECDC4'
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(t => t.stop());
+    } catch (e) {
+        Swal.fire('¡Micro Necesario!', 'Por favor activa el micrófono para jugar.', 'warning');
         return;
     }
 
+    document.getElementById('main-btn').style.display = 'none';
+    startTimeGlobal = Date.now();
+    startLevel();
+}
+
+function startLevel() {
+    const lvl = levels[currentLvlIndex];
+    document.getElementById('lvl-num').innerText = lvl.id;
+    document.getElementById('lvl-name').innerText = lvl.name;
+    wordsArray = lvl.text.split(" ");
+    currentWordIndex = 0;
+    timeLeft = lvl.time;
     gameActive = true;
-    document.getElementById('start-btn').classList.add('hidden');
-    document.getElementById('word-0').classList.add('current');
 
-    try {
-        recognition.start();
-    } catch (e) {
-        console.log("Reconocimiento ya activo");
-    }
+    renderWords();
+    updateTimerBar();
 
-    const countdown = setInterval(() => {
+    try { recognition.start(); } catch (e) { }
+
+    timer = setInterval(() => {
         timeLeft--;
-        document.getElementById('timer').innerText = timeLeft;
-        if (timeLeft <= 0 || currentWordIndex >= wordsArray.length) {
-            clearInterval(countdown);
-            endGame();
+        updateTimerBar();
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            loseLife();
         }
     }, 1000);
 }
 
-async function endGame() {
-    gameActive = false;
-    if (recognition) recognition.stop();
-    
-    confetti({
-        particleCount: 150,
-        spread: 70,
-        origin: { y: 0.6 }
-    });
-
-    const shareText = `¡Mira mamá! He leído ${score} palabras en 1 minuto en mi juego de lectura. 🚀📖`;
-
-    Swal.fire({
-        title: '¡Increíble lectura!',
-        text: `Lograste leer ${score} palabras mágicas. ¡Eres un campeón!`,
-        icon: 'success',
-        showDenyButton: true,
-        confirmButtonText: 'Jugar de nuevo 🎈',
-        denyButtonText: 'Compartir mi logro 📱',
-        confirmButtonColor: '#FF6B6B',
-        denyButtonColor: '#4ECDC4',
-    }).then((result) => {
-        if (result.isConfirmed) {
-            location.reload();
-        } else if (result.isDenied) {
-            shareScore(shareText);
-        }
+function renderWords() {
+    const container = document.getElementById('text-display');
+    container.innerHTML = "";
+    wordsArray.forEach((w, i) => {
+        const span = document.createElement('span');
+        span.innerText = w;
+        span.className = 'word' + (i === 0 ? ' current' : '');
+        span.id = 'w-' + i;
+        container.appendChild(span);
     });
 }
 
-async function shareScore() {
-    Swal.fire({
-        title: 'Preparando tu diploma...',
-        didOpen: () => { Swal.showLoading(); },
-        allowOutsideClick: false
-    });
+function cleanText(text) {
+    return text.normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim()
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+}
 
-    document.getElementById('final-score-img').innerText = score;
-    const captureArea = document.getElementById('capture-area');
+function checkSpeech(speech) {
+    const cleanSpeech = cleanText(speech);
 
-    try {
-        const canvas = await html2canvas(captureArea, {
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: "#ffffff",
-            scale: 2
-        });
+    const target = cleanText(wordsArray[currentWordIndex]);
 
-        const dataUrl = canvas.toDataURL("image/png");
-        const blob = await (await fetch(dataUrl)).blob();
-        const file = new File([blob], 'mi-record.png', { type: 'image/png' });
+    if (cleanSpeech.includes(target)) {
+        document.getElementById('w-' + currentWordIndex).className = 'word read';
+        currentWordIndex++;
+        totalWordsRead++;
 
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-                files: [file],
-                title: 'Mi Récord de Lectura',
-                text: `¡Mira! He leído ${score} palabras en un minuto. 📖✨`
-            });
-            Swal.close();
+        if (currentWordIndex >= wordsArray.length) {
+            clearInterval(timer);
+            gameActive = false;
+            winLevel();
         } else {
-            const link = document.createElement('a');
-            link.download = `record-${score}-palabras.png`;
-            link.href = dataUrl;
-            link.click();
-            Swal.fire('¡Diploma listo!', 'Se ha descargado tu imagen para que la envíes.', 'success');
+            document.getElementById('w-' + currentWordIndex).className = 'word current';
         }
-    } catch (error) {
-        console.error("Error al generar imagen:", error);
-        Swal.fire('Ups', 'No pudimos crear la imagen, pero puedes tomar una captura de pantalla.', 'error');
     }
+}
+
+function updateTimerBar() {
+    const pct = (timeLeft / levels[currentLvlIndex].time) * 100;
+    document.getElementById('timer-progress').style.width = pct + "%";
+}
+
+function loseLife() {
+    lives--;
+    gameActive = false;
+    updateLivesUI();
+    try { recognition.stop(); } catch (e) { }
+
+    if (lives <= 0) {
+        const totalMinutes = ((Date.now() - startTimeGlobal) / 1000) / 60;
+        const ppm = totalMinutes > 0 ? Math.round(totalWordsRead / totalMinutes) : 0;
+
+        document.getElementById('final-ppm-text').innerText = `${ppm} PPM (Nivel ${levels[currentLvlIndex].id})`;
+
+        Swal.fire({
+            title: '¡Buen intento! 👏',
+            html: `
+                <div style="text-align: left; background: #fef2f2; padding: 15px; border-radius: 15px; border: 2px solid #fee2e2;">
+                    <p><b>🚩 Nivel alcanzado:</b> ${levels[currentLvlIndex].id}</p>
+                    <p><b>⭐ Palabras leídas:</b> ${totalWordsRead}</p>
+                    <p><b>🚀 Tu velocidad:</b> ${ppm} PPM</p>
+                </div>
+                <p style="margin-top: 15px;">¡Sigue practicando para llegar al nivel 10!</p>
+            `,
+            icon: 'info',
+            showDenyButton: true,
+            confirmButtonText: 'Reintentar 🔄',
+            denyButtonText: 'Compartir Récord 📱',
+            confirmButtonColor: '#FF6B6B',
+            denyButtonColor: '#4ECDC4'
+        }).then(async (res) => {
+            if (res.isDenied) {
+                await generateAndShare();
+            } else {
+                location.reload();
+            }
+        });
+    } else {
+        Swal.fire({
+            title: '¡Tiempo agotado!',
+            text: `Te quedan ${lives} vidas.`,
+            icon: 'warning',
+            confirmButtonText: 'Intentar Nivel de nuevo'
+        }).then(startLevel);
+    }
+}
+
+async function generateAndShare() {
+    const canvas = await html2canvas(document.getElementById('capture-area'), { scale: 2 });
+    const dataUrl = canvas.toDataURL("image/png");
+    const blob = await (await fetch(dataUrl)).blob();
+    const file = new File([blob], 'mi-progreso.png', { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+            files: [file],
+            title: 'Mi Progreso de Lectura',
+            text: `¡Mira mamá! Hoy llegué al nivel ${levels[currentLvlIndex].id} con ${totalWordsRead} palabras leídas. 📖✨`
+        });
+    } else {
+        const link = document.createElement('a');
+        link.download = 'mi-logro.png';
+        link.href = dataUrl;
+        link.click();
+    }
+}
+
+function updateLivesUI() {
+    const container = document.getElementById('lives');
+    container.innerHTML = ""; // Limpiamos el contenedor
+    
+    for (let i = 0; i < 3; i++) {
+        const statusClass = i >= lives ? 'heart-img lost' : 'heart-img';
+        
+        container.innerHTML += `
+            <img src="media/corazon.png" 
+                 width="24" 
+                 height="24" 
+                 alt="vida" 
+                 class="${statusClass}">`;
+    }
+}
+
+function winLevel() {
+    confetti({ particleCount: 40, spread: 50, origin: { y: 0.8 } });
+
+    if (currentLvlIndex === levels.length - 1) {
+        endGame();
+    } else {
+        Swal.fire({
+            title: `¡Nivel ${levels[currentLvlIndex].id} superado!`,
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+        }).then(() => {
+            currentLvlIndex++;
+            startLevel();
+        });
+    }
+}
+
+async function endGame() {
+    try { recognition.stop(); } catch (e) { }
+
+    const totalMinutes = ((Date.now() - startTimeGlobal) / 1000) / 60;
+    const ppm = Math.round(totalWordsRead / totalMinutes);
+
+    document.getElementById('final-ppm-text').innerHTML = `<img
+                    src="./media/cohete.png" width="30" style="margin-right: 15px;"> ${ppm} Palabras por minuto`;
+    confetti({ particleCount: 200, spread: 100 });
+
+    Swal.fire({
+        title: '¡MAESTRO LEGENDARIO!',
+        html: `¡Completaste el desafío!<br><b style="font-size: 1.6rem; color: #2ecc71;">${ppm} PPM</b>`,
+        icon: 'success',
+        showDenyButton: true,
+        confirmButtonText: 'Repetir 🔄',
+        denyButtonText: 'Compartir Diploma 📱',
+        confirmButtonColor: '#FF6B6B',
+        denyButtonColor: '#4ECDC4'
+    }).then(async (res) => {
+        if (res.isDenied) {
+            await generateAndShare();
+        } else {
+            location.reload();
+        }
+    });
 }
