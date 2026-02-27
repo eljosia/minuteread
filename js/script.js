@@ -57,7 +57,7 @@ if (code) {
     }
 
     function backToGame() {
-        location.href = '/';
+        location.href = './';
     }
 
     fetchDiplomaData();

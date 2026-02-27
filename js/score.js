@@ -50,6 +50,6 @@ async function fetchTopScores() {
 }
 
 function goBack() {
-    window.location.href = "/";
+    window.location.href = "./";
 }
 window.addEventListener('DOMContentLoaded', fetchTopScores);
