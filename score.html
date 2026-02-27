@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+
+    <title>Lista de Puntajes</title>
+</head>
+
+<body>
+    <section id="leaderboard-section" class="scores-container">
+        <div class="scores-header">
+            <img src="media/copa-de-oro.png" width="50" alt="" srcset="">
+            <h2>Tabla de Campeones</h2>
+            <img src="media/libro-de-lectura.png" width="50" alt="" srcset="">
+        </div>
+
+        <div id="scores-list" class="scores-list">
+            <p class="loading-text">Cargando campeones...</p>
+        </div>
+
+        <button class="btn-refresh" onclick="fetchTopScores()">Actualizar Tabla 🔄</button>
+        <button class="btn-back" onclick="goBack()">Volver al Juego</button>
+    </section>
+
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js"
+        integrity="sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.min.js"></script>
+    <script src="./js/supabase.js"></script>
+    <script src="./js/score.js"></script>
+</body>
+
+</html>

@@ -339,3 +339,91 @@ body {
     box-shadow: 0 6px 0 #e11d48;
     font-family: inherit;
 }
+
+.scores-container {
+    background: white;
+    margin-top: 2rem;
+    padding: 2rem;
+    border-radius: 30px;
+    border: 5px solid var(--accent);
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+}
+
+.scores-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.scores-header h2 {
+    color: var(--primary);
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.scores-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.score-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: var(--bg);
+    border-radius: 15px;
+    border-left: 6px solid var(--secondary);
+    transition: transform 0.2s;
+}
+
+.score-card:hover { transform: scale(1.02); }
+
+.player-info { text-align: left; }
+.player-name-tag { 
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    font-weight: bold; 
+    color: #1a202c; 
+    text-transform: capitalize;
+}
+
+.player-stats-tag { font-size: 0.9rem; color: #64748b; }
+
+.ppm-badge {
+    background: var(--secondary);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.btn-refresh {
+    margin-top: 20px;
+    background: none;
+    border: 2px solid var(--secondary);
+    color: var(--secondary);
+    padding: 8px 20px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+}
+
+.btn-back {
+    margin-top: 20px;
+    background: none;
+    border: 2px solid var(--secondary);
+    color: var(--secondary);
+    padding: 8px 20px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+}
