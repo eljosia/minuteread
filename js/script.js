@@ -88,16 +88,29 @@ if (code) {
 
 document.getElementById('user-name').focus();
 if ('webkitSpeechRecognition' in window) {
-    recognition = new webkitSpeechRecognition();
-    recognition.lang = 'es-MX';
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.continuous = true;
     recognition.interimResults = true;
+    recognition.lang = 'es-MX';
 
     recognition.onresult = (event) => {
         if (!gameActive) return;
         const speech = event.results[event.results.length - 1][0].transcript.toLowerCase();
         // console.log("Speech:", speech);
         checkSpeech(speech);
+    };
+
+    recognition.onend = () => {
+        if (gameActive) {
+            try {
+                recognition.start();
+                console.log("Reinicio automático para Android activado");
+            } catch (e) {
+                setTimeout(() => {
+                    if (gameActive) recognition.start();
+                }, 300);
+            }
+        }
     };
 
     recognition.onerror = (event) => {
@@ -218,6 +231,9 @@ function checkSpeech(speech) {
         if (currentWordIndex >= wordsArray.length) {
             clearInterval(timer);
             gameActive = false;
+            try {
+                recognition.abort(); // 'abort' es más agresivo que 'stop' y libera el micro rápido
+            } catch (e) { }
             winLevel();
         } else {
             document.getElementById('w-' + currentWordIndex).className = 'word current';
@@ -233,6 +249,9 @@ function updateTimerBar() {
 function loseLife() {
     lives--;
     gameActive = false;
+    try {
+        recognition.abort(); // 'abort' es más agresivo que 'stop' y libera el micro rápido
+    } catch (e) { }
     updateLivesUI();
     try { recognition.stop(); } catch (e) { }
 
