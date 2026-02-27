@@ -9,55 +9,84 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
-    <div class="game-card">
+    <section id="game-card" class="game-card">
         <img src="./media/logo.png" width="100" alt="">
-        <div class="hud">
-            <div class="level-badge">
-                Nivel <span id="lvl-num">1</span>: <small id="lvl-name">Cargando...</small>
+        <div id="user-registration">
+            <h2 style="color: var(--primary);">¡Bienvenido, Lector!</h2>
+            <input type="text" id="user-name" placeholder="Escribe tu nombre aquí" autocomplete="off"
+                style="padding: 15px; border-radius: 20px; border: 2px solid var(--secondary); font-size: 1.2rem; width: 80%; text-align: center;">
+            <br><br>
+            <button class="btn-start" onclick="saveUserName()">Confirmar Nombre</button>
+        </div>
+        <div class="game hidden">
+            <div class="hud">
+                <div class="level-badge">
+                    Nivel <span id="lvl-num">1</span>: <small id="lvl-name">Cargando...</small>
+                </div>
+                <div class="lives-container" id="lives">
+                    <img src="media/corazon.png" width="24" height="24" alt="vida" class="heart-img">
+                    <img src="media/corazon.png" width="24" height="24" alt="vida" class="heart-img">
+                    <img src="media/corazon.png" width="24" height="24" alt="vida" class="heart-img">
+                </div>
             </div>
-            <div class="lives-container" id="lives">
-                <img src="media/corazon.png" width="24" height="24" alt="vida" class="heart-img">
-                <img src="media/corazon.png" width="24" height="24" alt="vida" class="heart-img">
-                <img src="media/corazon.png" width="24" height="24" alt="vida" class="heart-img">
+
+            <div class="timer-bar">
+                <div id="timer-progress"></div>
             </div>
-        </div>
 
-        <div class="timer-bar">
-            <div id="timer-progress"></div>
-        </div>
+            <div id="text-display" class="text-display">
+                <span id="player-name-display"></span>
+                <p>¿Estás listo para leer?</p>
+            </div>
 
-        <div id="text-display" class="text-display">
-            ¡Hola! ¿Estás listo para leer?
+            <button id="main-btn" class="btn-start" onclick="initGame()">¡Empezar Aventura! <img
+                    src="./media/cohete.png" width="30" alt=""></button>
         </div>
-
-        <button id="main-btn" class="btn-start" onclick="initGame()">¡Empezar Aventura! <img src="./media/cohete.png"
-                width="30" alt=""></button>
         <div id="footer">CopyRight © 2026 | <a href="https://joseangelrc.com/">Jose A. Rodriguez</a></div>
-    </div>
+    </section>
 
-    <div id="capture-area">
-        <div style="background: #fff9da; padding: 30px; border-radius: 30px;">
-            <h1 style="color: #FF6B6B; font-size: 45px; margin: 0;"><img src="./media/copa-de-oro.png" width="50"
-                    alt=""> <br>
-                ¡SUPER LECTOR! </h1>
-            <p style="font-size: 26px; color: #1a202c; margin: 15px 0;">Completé los 10 niveles</p>
-            <div style="font-size: 32px; font-weight: bold; color: #2ecc71;" id="final-ppm-text"><img
-                    src="./media/cohete.png" width="30" style="margin-right: 15px;">0 PPM</div>
-            <p style="font-size: 20px; color: #64748b; margin-top: 20px;">
-                Mi Aventura de Lectura
-                <br>
-                <img src="./media/libro-de-lectura.png" width="48" alt="">
-            </p>
+    <section id="diplome" class="hidden">
+        <button id="back-to-game-btn" onclick="backToGame()">Volver al Juego</button>
+
+        <div id="diplome-card" class="diploma-card">
+            <div class="diploma-border">
+                <div class="diploma-content">
+                    <div class="diploma-header">
+                        <img class="img-icon" src="./media/copa-de-oro.png" alt="" srcset="">
+                        <h1>¡SUPER LECTOR!</h1>
+                        <img class="img-icon" src="./media/libro-de-lectura.png" alt="" srcset="">
+                    </div>
+
+                    <p class="diploma-text">Se otorga con mucha alegría a:</p>
+                    <h2 id="final-name-diploma" class="player-name">Cargando...</h2>
+
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Velocidad</span>
+                            <span id="final-ppm-diploma" class="stat-value">Cargando...</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Nivel</span>
+                            <span id="final-lvl-diploma" class="stat-value">Cargando...</span>
+                        </div>
+                    </div>
+
+                    <p class="footer-text">¡Sigue brillando en tu aventura de lectura!</p>
+                    <div class="decoration-dots">••••••••••••••••••••</div>
+                    <span style="margin-top:10px">Maestra: Judith Elizabeth Rodriguez</span>
+                    <button id="download-diploma-btn">Descargar Diploma</button>
+                </div>
+            </div>
         </div>
-    </div>
-
-
+    </section>
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js" integrity="sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.min.js"></script>
     <script src="./script.js"></script>
 </body>
 
