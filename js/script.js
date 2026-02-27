@@ -15,6 +15,23 @@ let totalWordsRead = 0;
 let startTimeGlobal;
 let gameActive = false;
 
+async function logErrorToSupabase(errorMessage, extraData = {}) {
+    const { data, error } = await supabaseClient
+        .from('error_logs')
+        .insert([
+            {
+                nombre_usuario: playerName || 'Anonimo',
+                error_mensaje: errorMessage,
+                dispositivo: navigator.userAgent, // Captura navegador y sistema operativo
+                nivel_id: currentLvlIndex + 1,
+                ...extraData
+            }
+        ]);
+
+    if (error) console.error("Error al reportar log:", error);
+}
+
+
 //Primero revisamos si la url es de un diploma compartido
 let game_card = document.getElementById('game-card');
 let diplome = document.getElementById('diplome');
@@ -83,7 +100,14 @@ if ('webkitSpeechRecognition' in window) {
         checkSpeech(speech);
     };
 
-    recognition.onerror = (err) => console.error("Error Speech:", err.error);
+    recognition.onerror = (event) => {
+        console.error("Error de voz:", event.error);
+
+        // Solo logueamos errores serios, ignoramos "no-speech" si es muy frecuente
+        if (event.error !== 'no-speech') {
+            logErrorToSupabase(`Speech Error: ${event.error}`);
+        }
+    };
 }
 
 async function saveUserName() {
@@ -126,8 +150,8 @@ async function initGame() {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         stream.getTracks().forEach(t => t.stop());
     } catch (e) {
-        Swal.fire('¡Micro Necesario!', 'Por favor activa el micrófono para jugar.', 'warning');
-        return;
+        logErrorToSupabase(`Mic Permission Denied: ${e.message}`);
+        Swal.fire('¡Micro Necesario!', 'Activa el micro para jugar.', 'warning');
     }
 
     document.getElementById('main-btn').style.display = 'none';
@@ -140,12 +164,12 @@ function startLevel() {
     document.getElementById('lvl-num').innerText = lvl.id;
     document.getElementById('lvl-name').innerText = lvl.name;
     const randomText = lvl.options[Math.floor(Math.random() * lvl.options.length)];
-    
+
     wordsArray = randomText.split(" ");
     currentWordIndex = 0;
     timeLeft = lvl.time;
     gameActive = true;
-    
+
     renderWords();
     updateTimerBar();
 
